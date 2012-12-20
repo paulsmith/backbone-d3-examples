@@ -62,22 +62,25 @@ svg.append("g")
     .attr("class", "axis")
     .call(yAxis);
 
-var model = new Backbone.Model();
+var collection = new Backbone.Collection();
 
 function update() {
     svg.selectAll("circle")
-        .data(model.get("data"))
+        .data(collection.pluck("data"))
       .enter().append("circle")
         .attr("cx", function(d) { return x(fx(d)); })
         .attr("cy", function(d) { return y(fy(d)); })
-        .attr("r", r)
+        .attr("r", r);
 }
 
-model.on('change', update);
+collection.on('change', update);
+collection.on('add', update);
 
 function point() { return [Math.random(), Math.random()]; }
 
-model.set({data: d3.range(n).map(point)});
+d3.range(n).forEach(function() {
+    collection.add({data: point()});
+});
 
 </script>
 </body>
