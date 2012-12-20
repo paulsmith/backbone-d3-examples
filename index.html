@@ -75,12 +75,11 @@ function update() {
 
 collection.on('change', update);
 collection.on('add', update);
+collection.on('reset', update);
 
-function point() { return [Math.random(), Math.random()]; }
+function point() { return {data: [Math.random(), Math.random()]}; }
 
-d3.range(n).forEach(function() {
-    collection.add({data: point()});
-});
+collection.reset(d3.range(n).map(point));
 
 </script>
 </body>
