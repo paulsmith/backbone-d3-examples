@@ -7,7 +7,7 @@
         body { font: normal 14px monospace; }
         .axis path, .axis line {
             fill: none;
-            stroke: gray;
+            stroke: #000;
             shape-rendering: crispEdges;
         }
     </style>
@@ -59,37 +59,26 @@ svg.append("g")
     .attr("class", "axis")
     .call(yAxis);
 
-var collection = new Backbone.Collection();
+var model = new Backbone.Model();
 
 function redraw() {
     var points = svg.selectAll("circle")
-        .data(collection.pluck("data"), function(d) { return d; });
+        .data(model.get("data"), function(d) { return d; });
 
     points.enter().append("circle")
         .attr("cx", function(d) { return x(fx(d)); })
         .attr("cy", function(d) { return y(fy(d)); })
-        .attr("r", 0)
-        .style("fill", "green")
-      .transition().duration(500)
-        .style("fill", "black")
-        .attr("r", r);
+        .attr("r", r)
 
-    points.exit()
-        .style("fill", "red")
-      .transition().duration(500)
-        .style("opacity", 0)
-        .attr("r", 0)
-        .remove();
+    points.exit().remove();
 }
 
-collection.on('change', redraw);
-collection.on('add', redraw);
-collection.on('reset', redraw);
+model.on('change', redraw);
 
-function point() { return {data: [Math.random(), Math.random()]}; }
+function point() { return [Math.random(), Math.random()]; }
 
 function update() {
-    collection.reset(d3.range(n).map(point));
+    model.set({data: d3.range(n).map(point)});
 }
 
 update();
