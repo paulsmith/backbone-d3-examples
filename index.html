@@ -10,6 +10,10 @@
             stroke: #000;
             shape-rendering: crispEdges;
         }
+        circle {
+            fill: black;
+            stroke: none;
+        }
     </style>
     <script src="lib/d3.v3.js"></script>
     <script src="lib/underscore.v1.4.3.js"></script>
@@ -68,9 +72,16 @@ function redraw() {
     points.enter().append("circle")
         .attr("cx", function(d) { return x(fx(d)); })
         .attr("cy", function(d) { return y(fy(d)); })
-        .attr("r", r)
+        .attr("r", 0)
+      .transition().duration(500)
+        .attr("r", r);
 
-    points.exit().remove();
+    points.exit()
+        .style("fill", "red")
+      .transition().duration(500)
+        .style("opacity", 0)
+        .attr("r", 0)
+        .remove();
 }
 
 model.on('change', redraw);
