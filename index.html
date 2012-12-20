@@ -7,7 +7,7 @@
         body { font: normal 14px monospace; }
         .axis path, .axis line {
             fill: none;
-            stroke: gray;
+            stroke: #000;
             shape-rendering: crispEdges;
         }
         circle {
@@ -64,20 +64,31 @@ svg.append("g")
 
 var model = new Backbone.Model();
 
-function update() {
-    svg.selectAll("circle")
-        .data(model.get("data"))
-      .enter().append("circle")
+function redraw() {
+    var points = svg.selectAll("circle")
+        .data(model.get("data"), function(d) { return d; });
+
+    points.enter().append("circle")
         .attr("cx", function(d) { return x(fx(d)); })
         .attr("cy", function(d) { return y(fy(d)); })
-        .attr("r", r)
+        .attr("r", r);
+
+    points.exit().remove();
 }
 
-model.on('change', update);
+model.on('change', redraw);
 
 function point() { return [Math.random(), Math.random()]; }
 
-model.set({data: d3.range(n).map(point)});
+function update() {
+    model.set({data: d3.range(n).map(point)});
+}
+
+update();
+
+d3.select("body").append("button")
+    .on("click", update)
+    .text("Update data");
 
 </script>
 </body>
