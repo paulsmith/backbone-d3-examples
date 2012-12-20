@@ -10,9 +10,6 @@
             stroke: gray;
             shape-rendering: crispEdges;
         }
-        circle {
-            fill: black;
-        }
     </style>
     <script src="lib/d3.v3.js"></script>
     <script src="lib/underscore.v1.4.3.js"></script>
@@ -64,22 +61,42 @@ svg.append("g")
 
 var collection = new Backbone.Collection();
 
-function update() {
-    svg.selectAll("circle")
-        .data(collection.pluck("data"))
-      .enter().append("circle")
+function redraw() {
+    var points = svg.selectAll("circle")
+        .data(collection.pluck("data"), function(d) { return d; });
+
+    points.enter().append("circle")
         .attr("cx", function(d) { return x(fx(d)); })
         .attr("cy", function(d) { return y(fy(d)); })
+        .attr("r", 0)
+        .style("fill", "green")
+      .transition().duration(500)
+        .style("fill", "black")
         .attr("r", r);
+
+    points.exit()
+        .style("fill", "red")
+      .transition().duration(500)
+        .style("opacity", 0)
+        .attr("r", 0)
+        .remove();
 }
 
-collection.on('change', update);
-collection.on('add', update);
-collection.on('reset', update);
+collection.on('change', redraw);
+collection.on('add', redraw);
+collection.on('reset', redraw);
 
 function point() { return {data: [Math.random(), Math.random()]}; }
 
-collection.reset(d3.range(n).map(point));
+function update() {
+    collection.reset(d3.range(n).map(point));
+}
+
+update();
+
+d3.select("body").append("button")
+    .on("click", update)
+    .text("Update data");
 
 </script>
 </body>
