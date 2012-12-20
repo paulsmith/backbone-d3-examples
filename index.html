@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Backbone + D3.js</title>
+    <style>
+        body { font: normal 14px monospace; }
+        .axis path, .axis line {
+            fill: none;
+            stroke: gray;
+            shape-rendering: crispEdges;
+        }
+        circle {
+            fill: black;
+        }
+    </style>
+    <script src="lib/d3.v3.js"></script>
+    <script src="lib/underscore.v1.4.3.js"></script>
+    <script src="lib/jquery.v1.8.3.js"></script>
+    <script src="lib/backbone.v0.9.9.js"></script>
+</head>
+<body>
+<script>
+
+var margin = {top: 20, right: 20, bottom: 30, left: 40},
+    width = 960 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom,
+    r = 2.5,
+    n = 50;
+
+var x = d3.scale.linear()
+    .range([0, width]);
+
+var y = d3.scale.linear()
+    .range([height, 0]);
+
+function fx(d) { return d[0]; }
+function fy(d) { return d[1]; }
+
+var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom")
+    .ticks(10);
+
+var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left")
+    .ticks(5);
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+svg.append("g")
+    .attr("class", "axis")
+    .attr("transform", "translate(0," + height + ")")
+    .call(xAxis);
+
+svg.append("g")
+    .attr("class", "axis")
+    .call(yAxis);
+
+var model = new Backbone.Model();
+
+function update() {
+    svg.selectAll("circle")
+        .data(model.get("data"))
+      .enter().append("circle")
+        .attr("cx", function(d) { return x(fx(d)); })
+        .attr("cy", function(d) { return y(fy(d)); })
+        .attr("r", r)
+}
+
+model.on('change', update);
+
+function point() { return [Math.random(), Math.random()]; }
+
+model.set({data: d3.range(n).map(point)});
+
+</script>
+</body>
+</html>
