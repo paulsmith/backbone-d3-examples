@@ -19,72 +19,84 @@
 <body>
 <script>
 
-var margin = {top: 20, right: 20, bottom: 30, left: 40},
-    width = 960 - margin.left - margin.right,
-    height = 500 - margin.top - margin.bottom,
-    r = 2.5,
-    n = 50;
-
-var x = d3.scale.linear()
-    .range([0, width]);
-
-var y = d3.scale.linear()
-    .range([height, 0]);
-
-function fx(d) { return d[0]; }
-function fy(d) { return d[1]; }
-
-var xAxis = d3.svg.axis()
-    .scale(x)
-    .orient("bottom")
-    .ticks(10);
-
-var yAxis = d3.svg.axis()
-    .scale(y)
-    .orient("left")
-    .ticks(5);
-
-var svg = d3.select("body").append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-  .append("g")
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-svg.append("g")
-    .attr("class", "axis")
-    .attr("transform", "translate(0," + height + ")")
-    .call(xAxis);
-
-svg.append("g")
-    .attr("class", "axis")
-    .call(yAxis);
-
 var collection = new Backbone.Collection();
 
-function redraw() {
-    var points = svg.selectAll("circle")
-        .data(collection.pluck("data"), function(d) { return d; });
+var View = Backbone.View.extend({
+    initialize: function() {
+        var margin = {top: 20, right: 20, bottom: 30, left: 40},
+            width = 960 - margin.left - margin.right,
+            height = 500 - margin.top - margin.bottom,
+            r = 2.5;
 
-    points.enter().append("circle")
-        .attr("cx", function(d) { return x(fx(d)); })
-        .attr("cy", function(d) { return y(fy(d)); })
-        .attr("r", 0)
-        .style("fill", "green")
-      .transition().duration(500)
-        .style("fill", "black")
-        .attr("r", r);
+        this.r = r;
 
-    points.exit()
-        .style("fill", "red")
-      .transition().duration(500)
-        .style("opacity", 0)
-        .attr("r", 0)
-        .remove();
-}
+        var x = d3.scale.linear()
+            .range([0, width]);
 
-collection.on('change', redraw);
-collection.on('add', redraw);
-collection.on('reset', redraw);
+        var y = d3.scale.linear()
+            .range([height, 0]);
+
+        this.cx = function(d) { return x(d[0]); }
+        this.cy = function(d) { return y(d[1]); }
+
+        var xAxis = d3.svg.axis()
+            .scale(x)
+            .orient("bottom")
+            .ticks(10);
+
+        var yAxis = d3.svg.axis()
+            .scale(y)
+            .orient("left")
+            .ticks(5);
+
+        var g = this.g = d3.select(this.el)
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+          .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        g.append("g")
+            .attr("class", "axis")
+            .attr("transform", "translate(0," + height + ")")
+            .call(xAxis);
+
+        g.append("g")
+            .attr("class", "axis")
+            .call(yAxis);
+
+        this.listenTo(this.collection, "add", this.render);
+        this.listenTo(this.collection, "change", this.render);
+        this.listenTo(this.collection, "reset", this.render);
+    },
+
+    render: function() {
+        var points = this.g.selectAll("circle")
+            .data(this.collection.pluck("data"), function(d) { return d; });
+
+        points.enter().append("circle")
+            .attr("cx", this.cx)
+            .attr("cy", this.cy)
+            .attr("r", 0)
+            .style("fill", "green")
+          .transition().duration(500)
+            .style("fill", "black")
+            .attr("r", this.r);
+
+        points.exit()
+            .style("fill", "red")
+          .transition().duration(500)
+            .style("opacity", 0)
+            .attr("r", 0)
+
+        return this;
+    }
+});
+
+var svg = d3.select("body").append("svg");
+
+var view = new View({el: svg.node(), collection: collection});
+
+var n = 50;
 
 function point() { return {data: [Math.random(), Math.random()]}; }
 
